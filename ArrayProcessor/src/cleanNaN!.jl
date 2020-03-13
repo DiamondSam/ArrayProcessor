@@ -1,14 +1,14 @@
 @doc """
-interpolate!(y)
+cleanNaN!(y)
 
-y is a vector that has many "NaN". interpolate!(y) keeps the front NaN,
+y is a vector that has many "NaN". cleanNaN!(y) keeps the front NaN,
 change the other NaN based on the previous and last data. \n
 !!! Be careful, thisfunction can change the original vector y.
 
 Examples\n
 ≡≡≡≡≡≡≡≡≡≡\n
 julia> y=[NaN ,NaN, 1 ,1.1 ,1.3, NaN,NaN,3.4,4,NaN]\n
-julia> interpolate!(y)\n
+julia> cleanNaN!(y)\n
 10-element Array{Float64,1}:\n
  NaN\n
  NaN\n
@@ -48,7 +48,17 @@ function interpolate!(y)
                 end
                 return y
             else
-                y[missingnan] .= y[missingnan[1]-1]
+                i = missingnan
+                start = y[i[1]-1]
+                try
+                    lastn = y[i[end]+1]
+                    delt_y = (lastn - start)/(length(i)+1)
+                    for j = 1:length(i)
+                        y[i[j]] = start + delt_y*j
+                    end
+                catch
+                    y[i] .= start
+                end
                 return y
             end
         end
